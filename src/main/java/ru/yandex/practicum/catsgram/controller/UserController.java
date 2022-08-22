@@ -1,43 +1,39 @@
 package ru.yandex.practicum.catsgram.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.catsgram.exception.InvalidEmailException;
-import ru.yandex.practicum.catsgram.exception.UserAlreadyExistException;
 import ru.yandex.practicum.catsgram.model.User;
+import ru.yandex.practicum.catsgram.service.UserService;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final Set<User> users = new HashSet<>();
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
-    public Set<User> findAll() {
-        return users;
+    public Collection<User> findAll() {
+        return userService.findAll();
     }
 
     @PostMapping
-    public void create(@RequestBody User user) {
-        if (user.getEmail() == null || user.getEmail().equals("")) {
-            throw new InvalidEmailException("В переданных данных отсутствует адрес электронной почты");
-        } else if (users.contains(user)) {
-            throw new UserAlreadyExistException("Пользователь с указанным адресом электронной почты уже был добавлен ранее");
-        } else {
-            users.add(user);
-        }
+    public User createUser(@RequestBody User user) {
+        return userService.createUser(user);
     }
 
     @PutMapping
-    public void update(@RequestBody User user) {
-        if (user.getEmail() == null || user.getEmail().equals("")) {
-            throw new InvalidEmailException("В переданных данных отсутствует адрес электронной почты");
-        } else if (users.contains(user)) {
-            users.remove(user);
-            users.add(user);
-        } else {
-            users.add(user);
-        }
+    public User updateUser(@RequestBody User user) {
+        return userService.updateUser(user);
+    }
+
+    @GetMapping("/user/{userMail}")
+    public User getUser(@PathVariable("userMail") String userMail){
+        return userService.findUserByEmail(userMail);
     }
 }
